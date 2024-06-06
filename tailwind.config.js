@@ -18,6 +18,15 @@ module.exports = {
       },
     },
     extend: {
+      fontFamily: {
+        custom: ['Satoshi', 'sans-serif'],
+      },
+      fontWeight: {
+        light: 300,
+        normal: 400,
+        medium: 500,
+        bold: 700,
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

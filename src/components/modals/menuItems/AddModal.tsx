@@ -387,7 +387,7 @@ const AddModal = () => {
               >
                 <div className="">{option.name}</div>
                 <div>
-                  Price: {option.price}
+                  Price: ₱{option.price}
                 </div>
                 <div className="flex items-center flex-row gap-x-2">
                   Quantity
@@ -402,7 +402,7 @@ const AddModal = () => {
                   />
                 </div>
                 <div className="flex items-center flex-row gap-x-2">
-                  Total cost: {option.cost}
+                  Total cost: ₱{option.cost || 0}
                 </div>
               </div>
             ))}
