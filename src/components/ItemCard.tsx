@@ -68,7 +68,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
           </h4>
         </div>
         <div className="font-semibold">
-          ₱{" "}
+          ₱
           {item?.options && item.options.length > 0 ? (
             <span>{item.options[0].price}</span>
           ) : (
