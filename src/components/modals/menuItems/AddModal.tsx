@@ -1,19 +1,17 @@
-import {useAddModal} from "@/hooks/useAddModal";
+import { useAddModal } from "@/hooks/useAddModal";
 import Modal from "../../Modal";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
-
-import { Input } from "../../ui/input";
-import Select from "../../SelectInput";
-import Heading from "../../Heading";
-import ImageUpload from "@/components/ImageUpload";
-import { Button } from "../../ui/button";
-import { PlusIcon, Trash2 } from "lucide-react";
 import { ref, set, push } from "firebase/database";
 import { database } from "@/config/firebase";
 import { toast } from "sonner";
 import { ItemOption } from "@/types";
-import { useOptions } from "@/hooks/useOptions";
+import CategoryStep from "@/components/steps/CategoryStep";
+import NameStep from "@/components/steps/NameStep";
+import OptionStep from "@/components/steps/OptionStep";
+import QuantityStep from "@/components/steps/QuantityStep";
+import ImageStep from "@/components/steps/ImageStep";
+import useCheckInputs from "@/hooks/useCheckInputs";
 
 enum STEPS {
   CATEGORY = 0,
@@ -23,25 +21,14 @@ enum STEPS {
   IMAGE = 4,
 }
 
-const categories = [
-  "Appetizers",
-  "Soups & Salads",
-  "Main Courses",
-  "Sides",
-  "Desserts",
-  "Beverages",
-];
-
 const AddModal = () => {
-  const {handleCloseAddModal, modalState} = useAddModal();
+  const { handleCloseAddModal, modalState } = useAddModal();
 
   const [step, setStep] = useState(STEPS.CATEGORY);
   const [isOptions, setIsOptions] = useState<boolean | null>(null);
   const [options, setOptions] = useState<ItemOption[] | []>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
-
-  const {optionItems} = useOptions();
 
   const { register, handleSubmit, watch, setValue, reset } =
     useForm<FieldValues>({
@@ -65,47 +52,16 @@ const AddModal = () => {
   const optionName: string = watch("optionName");
   const optionPrice: number = watch("optionPrice");
 
-  useEffect(() => {
-    if (step === STEPS.CATEGORY && !category) {
-      setIsDisabled(true);
-    } else {
-      setIsDisabled(false);
-    }
-
-    if (step === STEPS.NAME && name === "") {
-      setIsDisabled(true);
-    } else {
-      setIsDisabled(false);
-    }
-
-    if (step === STEPS.OPTIONS) {
-      if (!isOptions && Number(price) === 0) {
-        setIsDisabled(true);
-      } else {
-        setIsDisabled(false);
-      }
-
-      if (isOptions && options.length === 0) {
-        setIsDisabled(true);
-      } else {
-        setIsDisabled(false);
-      }
-    }
-
-    if (step === STEPS.QUANTITY) {
-      if (isOptions && (options.some((option) => Number(option.quantity) === 0 || !option.quantity))) {
-        return setIsDisabled(true);
-      } else if (isOptions && (!options.some((option) => Number(option.quantity) === 0 || !option.quantity))) {
-        return setIsDisabled(false);
-      }
-
-      if (!isOptions && Number(quantity) === 0) {
-        setIsDisabled(true);
-      } else {
-        setIsDisabled(false);
-      }
-    }
-  }, [category, step, name, price, isOptions, options, quantity]);
+  useCheckInputs({
+    step,
+    category,
+    name,
+    price,
+    isOptions,
+    options,
+    quantity,
+    setIsDisabled,
+  })
 
   const setCustomValue = (id: string, value: any) => {
     setValue(id, value, {
@@ -139,7 +95,7 @@ const AddModal = () => {
             optionQuantity: null,
             options,
           });
-          handleCloseAddModal()
+          handleCloseAddModal();
           setOptions([]);
         } else {
           await set(push(ref(database, "menuItems")), {
@@ -148,7 +104,7 @@ const AddModal = () => {
             optionName: null,
             optionQuantity: null,
           });
-          handleCloseAddModal()
+          handleCloseAddModal();
         }
         toast.success("Item added successfully!");
         setStep(STEPS.CATEGORY);
@@ -193,14 +149,16 @@ const AddModal = () => {
   };
 
   const updateOptionPrice = (index: number, price: number) => {
-    const updatedOptions = options.map((option, i) => i === index ? { ...option, price } : option);
+    const updatedOptions = options.map((option, i) =>
+      i === index ? { ...option, price, cost: Number(option?.quantity) * price } : option
+    );
     setOptions(updatedOptions);
   };
 
   const updateOptionQuantity = (index: number, quantity: number) => {
-    const updatedOptions = options.map((option, i) =>{
-      const cost = quantity * Number(option.price)
-     return  i === index ? { ...option, quantity, cost } : option
+    const updatedOptions = options.map((option, i) => {
+      const cost = quantity * Number(option.price);
+      return i === index ? { ...option, quantity, cost } : option;
     });
     setOptions(updatedOptions);
   };
@@ -216,202 +174,46 @@ const AddModal = () => {
   };
 
   let body = (
-    <div className="flex flex-col gap-8">
-      <Heading
-        title="Please choose a category"
-        subtitle=" Select a category from the dropdown below to proceed."
-      />
-      <Select
-        defaultPlaceholder="Select Category..."
-        {...register("category", { required: true })}
-        items={categories}
-        selectedValue={category}
-        onChange={(value: string) => setCustomValue("category", value)}
-      />
-    </div>
+    <CategoryStep
+      register={register}
+      setCustomValue={setCustomValue}
+      category={category}
+    />
   );
 
   if (step === STEPS.NAME) {
-    body = (
-      <div className="flex flex-col gap-8">
-        <Heading
-          title="Please enter item name"
-          subtitle="Please provide a name for the menu item."
-        />
-        <Input
-          className="py-6"
-          placeholder="Name..."
-          id="name"
-          required
-          {...register("name", { required: true })}
-        />
-      </div>
-    );
+    body = <NameStep register={register} />;
   }
 
   if (step === STEPS.OPTIONS) {
     body = (
-      <div className="flex flex-col gap-8">
-        <Heading
-          title="Add Options and Quantity"
-          subtitle="Specify any options available for this item (e.g., sizes, add-ons)."
-        />
-        <div className="flex flex-col gap-y-2">
-          Do you want to include options for the item?
-          <Select
-            defaultPlaceholder="Select Options..."
-            {...register("isOptions", { required: true })}
-            items={["No", "Yes"]}
-            selectedValue={
-              isOptions === null ? "" : isOptions === false ? "No" : "Yes"
-            }
-            onChange={(value: string) => handleSelectOption(value)}
-          />
-        </div>
-        {isOptions ? (
-          <div className="flex flex-col gap-y-2">
-            Please select an option and price
-            <div className="flex flex-row gap-x-4 items-center justify-between">
-              <div className="flex flex-row items-center w-[50%]">
-                <Select
-                  defaultPlaceholder="Select Option..."
-                  items={optionItems || []}
-                  selectedValue={optionName}
-                  onChange={(value: string) =>
-                    setCustomValue("optionName", value)
-                  }
-                />
-              </div>
-              <div className="flex flex-row gap-x-2 items-center w-[50%]">
-                Price:
-                <Input
-                  type="number"
-                  className="py-6"
-                  placeholder="Price..."
-                  id="optionPrice"
-                  required
-                  {...register("optionPrice", { required: true })}
-                />
-              </div>
-              <Button onClick={addOption}>
-                <PlusIcon size={18} />
-              </Button>
-            </div>
-            {options.length > 0 && (
-              <h5 className="font-semibold pt-4">Item Options</h5>
-            )}
-            <div className="flex flex-col gap-4 max-h-60 overflow-y-auto">
-              {options.map((option, index) => (
-                <div
-                  key={index}
-                  className="flex flex-row gap-x-4 pt-2 items-center justify-between"
-                >
-                  <div className="w-[30%]">{option.name}</div>
-                  <div className="flex items-center flex-row gap-x-2">
-                    Price:
-                    <Input
-                      type="number"
-                      value={option.price}
-                      onChange={(e) =>
-                        updateOptionPrice(index, Number(e.target.value))
-                      }
-                      className="py-2"
-                    />
-                  </div>
-                  <Button onClick={() => removeOption(index)}>
-                    <Trash2 size={18} />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          isOptions === false && (
-            <div className="flex flex-col gap-y-2">
-              How much does it cost?
-              <Input
-                type="number"
-                className="py-6"
-                placeholder="Price..."
-                id="price"
-                {...register('price', {required: true})}
-                required
-                
-              />
-            </div>
-          )
-        )}
-      </div>
+      <OptionStep
+        register={register}
+        isOptions={isOptions}
+        setCustomValue={setCustomValue}
+        optionName={optionName}
+        options={options}
+        handleSelectOption={handleSelectOption}
+        addOption={addOption}
+        updateOptionPrice={updateOptionPrice}
+        removeOption={removeOption}
+      />
     );
   }
 
   if (step === STEPS.QUANTITY) {
     body = (
-      <div className="flex flex-col gap-8">
-        <Heading
-          title="Please enter the quantity"
-          subtitle="How many are there in stock?"
-        />
-        {options.length > 0 ? (
-          <div className="flex flex-col gap-4 max-h-60 overflow-y-auto">
-            {options.map((option, index) => (
-              <div
-                key={index}
-                className="flex flex-row gap-x-4 pt-2 items-center justify-between"
-              >
-                <div className="">{option.name}</div>
-                <div>
-                  Price: ₱{option.price}
-                </div>
-                <div className="flex items-center flex-row gap-x-2 w-[30%]">
-                  Quantity
-                  <Input
-                    type="number"
-                    id="quantity"
-                    value={option.quantity || 0}
-                    onChange={(e) =>
-                      updateOptionQuantity(index, Number(e.target.value))
-                    }
-                    className="py-2 "
-                  />
-                </div>
-                <div className="flex items-center flex-row gap-x-2">
-                  Total cost: ₱{option.cost || 0}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div>
-            <Input
-              type="number"
-              className="py-6"
-              placeholder="Quantity..."
-              id="quantity"
-              required
-              value={quantity}
-              {...register('quantity', {required: true})}
-              
-            />
-          </div>
-        )}
-      </div>
+      <QuantityStep
+        options={options}
+        register={register}
+        quantity={quantity}
+        updateOptionQuantity={updateOptionQuantity}
+      />
     );
   }
 
   if (step === STEPS.IMAGE) {
-    body = (
-      <div className="flex flex-col gap-8">
-        <Heading
-          title="Please upload photo"
-          subtitle="Please provide a photo of the item."
-        />
-        <ImageUpload
-          image={image}
-          onChange={(value: string) => setCustomValue("image", value)}
-        />
-      </div>
-    );
+    body = <ImageStep image={image} setCustomValue={setCustomValue} />;
   }
 
   return (

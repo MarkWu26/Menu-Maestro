@@ -31,17 +31,15 @@ const LoginModal = () => {
   } = useForm<FieldValues>({});
 
   const googleSignIn = async () => {
-  
     const provider = new GoogleAuthProvider();
       try {
         await signInWithPopup(auth, provider);
         toast.success('Logged in!')
-       
         setClose();
         reset();
       } catch (error) {
         console.error(error);
-       
+        toast.error('Error!')
       }
   }
 
@@ -73,7 +71,6 @@ const LoginModal = () => {
             Enter your details below to login.
           </DialogDescription>
         </DialogHeader>
-        {/* <UserAuthForm type={userType} isPawnshop={isPawnshop}/> */}
         <div className="gap-8 flex flex-col">
           <div className="flex flex-col gap-4">
             <span> Email</span>

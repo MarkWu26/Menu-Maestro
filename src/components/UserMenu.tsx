@@ -10,45 +10,42 @@ import {
 import Avatar from "./Avatar";
 import { useSignupModal } from "@/hooks/useSignupModal";
 import { useLoginModal } from "@/hooks/useLoginModal";
-
 import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { auth } from "@/config/firebase";
 import { onAuthStateChanged, signOut, reload } from "firebase/auth";
-import { setUser } from "@/features/slice/userSlice";
 import { toast } from "sonner";
 import { serializeUser } from "@/lib/serializeUser";
 import { useAddModal } from "@/hooks/useAddModal";
 import { useAddOptionModal } from "@/hooks/useAddOptionModal";
+import { useUser } from "@/hooks/useUser";
 
 const UserMenu = () => {
-  const dispatch = useDispatch();
+
   const { setOpen: setOpenSignupModal } = useSignupModal();
   const { setOpen: setOpenLoginModal } = useLoginModal();
-  const {handleOpenOptionModal} = useAddOptionModal();
-  const user = useSelector((state: any) => state.user.user);
-  const {handleOpenAddModal} = useAddModal();
+  const { handleOpenOptionModal } = useAddOptionModal();
+  const {setCurrentUser, user} = useUser();
+  const { handleOpenAddModal } = useAddModal();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         reload(user)
           .then(() => {
-            dispatch(setUser(serializeUser(user)));
+            setCurrentUser(serializeUser(user));
           })
           .catch((error) => {
             console.error("Failed to reload user:", error);
           });
       } else {
-        dispatch(setUser(null));
+        setCurrentUser(null)
       }
     });
-
     return () => {
       unsubscribe();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth, dispatch]);
+  }, [auth]);
 
   const logout = async () => {
     try {

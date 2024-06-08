@@ -1,11 +1,18 @@
-import { useSelector } from "react-redux"
+
+import { useDispatch, useSelector } from "react-redux";
+import { setOptions } from "@/features/slice/optionSlice";
 
 export const useOptions = () => {
-    
-    const optionItems = useSelector((state: any) => state.options.options);
+  const dispatch = useDispatch();
 
+  const optionItems = useSelector((state: any) => state.options.options);
 
-    return {
-        optionItems
-    }
-}
+  const setMenuOptions = (options: any) => {
+    dispatch(setOptions(options));
+  };
+
+  return {
+    optionItems,
+    setMenuOptions,
+  };
+};

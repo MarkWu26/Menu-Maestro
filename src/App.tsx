@@ -2,31 +2,29 @@ import "./App.css";
 import Container from "./components/Container";
 import ItemCard from "./components/ItemCard";
 import Navbar from "./components/Navbar";
-import { Button } from "./components/ui/button";
-import { Plus } from "lucide-react";
 import { useAddModal } from "./hooks/useAddModal";
-import MenuModal from "./components/modals/menuItems/AddModal";
 import { useEffect, useState } from "react";
 import { database } from "@/config/firebase";
 import { ref, onValue } from "firebase/database";
 import EmptyHeading from "./components/EmptyHeading";
-import SkeletonCard from "./components/SkeletonCard";
-import { useDispatch, useSelector } from "react-redux";
 import { useLoginModal } from "./hooks/useLoginModal";
-import { setOptions } from "./features/slice/optionSlice";
 import { useMenuItems } from "./hooks/useMenuItems";
 import { item } from "./types";
+import CategoryFilter from "./components/CategoryFilter";
+import Loading from "./components/Loading";
+import Header from "./components/Header";
+import { useUser } from "./hooks/useUser";
+import { useOptions } from "./hooks/useOptions";
 
 function App() {
+  const [allItems, setAllItems] = useState<item[] | null>(); //store all items in a state
+  const [filter, setFilter] = useState("All");
+
   const { setOpen: handleOpenLoginModal } = useLoginModal();
   const { handleOpenAddModal } = useAddModal();
   const { setItems, menuItems } = useMenuItems();
-  const [allItems, setAllItems] = useState<item[] | null>();
-  const [filter, setFilter] = useState("All");
-
-  const user = useSelector((state: any) => state.user.user);
-
-  const dispatch = useDispatch();
+  const { user } = useUser();
+  const { setMenuOptions } = useOptions();
 
   const menuItemsRef = ref(database, "/menuItems");
   const optionsRef = ref(database, "/menuOptions");
@@ -50,9 +48,9 @@ function App() {
       const data = snapshot.val();
       if (data) {
         const optionsArray = Object.keys(data).map((key) => data[key]);
-        dispatch(setOptions(optionsArray.map((option) => option.optionName)));
+        setMenuOptions(optionsArray.map((option) => option.optionName));
       } else {
-        dispatch(setOptions([]));
+        setMenuOptions([]);
       }
     });
 
@@ -83,77 +81,18 @@ function App() {
     }
   };
 
-  const loop = ["", "", "", ""];
-
-  const categories = [
-    "All",
-    "Appetizers",
-    "Soups & Salads",
-    "Main Courses",
-    "Sides",
-    "Desserts",
-    "Beverages",
-  ];
-
   if (!menuItems) {
-    return (
-      <>
-        <Navbar />
-        <div className="pt-28">
-          <Container>
-            <div className="flex flex-row justify-between w-full items-center">
-              <div className="font-semibold text-slate-800 text-2xl">Menu</div>
-            </div>
-            <div className="pt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 pb-12">
-              {loop.map((card, key) => (
-                <div key={key}>
-                  <SkeletonCard />
-                </div>
-              ))}
-            </div>
-          </Container>
-        </div>
-      </>
-    );
+    return <Loading />;
   }
 
   return (
     <>
-      <MenuModal />
       <Navbar />
       <div className="pt-24">
         <Container>
-          <div className="flex flex-row justify-between w-full items-center">
-            <div className="font-semibold text-slate-800 text-2xl">Menu</div>
-            {menuItems.length > 0 && (
-              <div>
-                <Button
-                  className="px-6 text-base font-semibold flex flex-row gap-x-2 items-center"
-                  size={"lg"}
-                  onClick={openAdd}
-                >
-                  <Plus size={18} /> Add Menu
-                </Button>
-              </div>
-            )}
-          </div>
-          <div className="flex flex-row py-5 overflow-x-auto">
-            <div className="flex gap-x-6 ">
-              {categories.map((item, index) => (
-                <div
-                  className={`flex flex-col rounded-xl items-center justify-center px-10 py-[0px] sm:p-4 sm:px-8 bg-white shadow-lg hover:cursor-pointer font-medium text-center ${
-                    filter === item
-                      ? "bg-green-100 border-[1px] border-green-400"
-                      : "hover:bg-green-50"
-                  } transition ease-in-out duration-200`}
-                  key={index}
-                  onClick={() => handleSetFilter(item)}
-                >
-                <span className="flex flex-row"> {item}</span>
-                 
-                </div>
-              ))}
-            </div>
+          <Header openAddModal={openAdd} />
+          <div className="flex flex-row py-8  sm:py-6 overflow-x-auto">
+            <CategoryFilter handleSetFilter={handleSetFilter} filter={filter} />
           </div>
           {menuItems.length === 0 ? (
             <EmptyHeading
