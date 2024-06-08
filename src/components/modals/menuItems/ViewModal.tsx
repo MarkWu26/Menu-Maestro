@@ -32,7 +32,7 @@ const ViewModal = () => {
       <div className="relative">
         <img
           src={selectedItem?.image || ""}
-          className="rounded-xl overflow-hidden aspect-square h-[35vh] object-cover w-full"
+          className="rounded-xl overflow-hidden aspect-square h-[32vh] sm:h-[35vh] object-cover w-full"
         />
       </div>
       <div className="pt-2 flex flex-col gap-y-2 text-base">
@@ -97,6 +97,7 @@ const ViewModal = () => {
       body={body}
       title="View Item"
       actionLabel="Close"
+      isViewModal
     />
   );
 };

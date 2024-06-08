@@ -141,7 +141,7 @@ function App() {
             <div className="flex gap-x-6 ">
               {categories.map((item, index) => (
                 <div
-                  className={`flex flex-row rounded-xl items-center justify-center px-10 py-[0px] sm:p-4 sm:px-8 bg-white shadow-lg hover:cursor-pointer font-medium text-center ${
+                  className={`flex flex-col rounded-xl items-center justify-center px-10 py-[0px] sm:p-4 sm:px-8 bg-white shadow-lg hover:cursor-pointer font-medium text-center ${
                     filter === item
                       ? "bg-green-100 border-[1px] border-green-400"
                       : "hover:bg-green-50"

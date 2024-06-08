@@ -19,6 +19,7 @@ interface ModalProps {
   isLoading?: boolean;
   secondaryAction?: () => void;
   secondaryActionLabel?: string;
+  isViewModal?: boolean;
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -33,6 +34,7 @@ const Modal: React.FC<ModalProps> = ({
   secondaryAction,
   secondaryActionLabel,
   isLoading,
+  isViewModal
 }) => {
   const [showModal, setShowModal] = useState(isOpen);
 
@@ -121,7 +123,7 @@ const Modal: React.FC<ModalProps> = ({
                         <div className="text-lg font-semibold">{title}</div>
                       </div>
                       {/* Body */}
-                      <div className="relative p-6 flex-auto overflow-auto">
+                      <div className={`relative p-6  flex-auto overflow-auto ${isViewModal && 'pb-0'}`}>
                         {body}
                       </div>
                       {/* Footer */}
