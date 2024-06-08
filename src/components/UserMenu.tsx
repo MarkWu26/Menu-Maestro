@@ -5,49 +5,59 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuLabel,
-  DropdownMenuSeparator
+  DropdownMenuSeparator,
 } from "./ui/dropdown-menu";
 import Avatar from "./Avatar";
-import useSignupModal from "@/hooks/useSignupModal";
-import useLoginModal from "@/hooks/useLoginModal";
+import { useSignupModal } from "@/hooks/useSignupModal";
+import { useLoginModal } from "@/hooks/useLoginModal";
 
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { auth } from '@/config/firebase';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { auth } from "@/config/firebase";
+import { onAuthStateChanged, signOut, reload } from "firebase/auth";
 import { setUser } from "@/features/slice/userSlice";
 import { toast } from "sonner";
+import { serializeUser } from "@/lib/serializeUser";
+import { useAddModal } from "@/hooks/useAddModal";
+import { useAddOptionModal } from "@/hooks/useAddOptionModal";
 
 const UserMenu = () => {
-
   const dispatch = useDispatch();
-
+  const { setOpen: setOpenSignupModal } = useSignupModal();
+  const { setOpen: setOpenLoginModal } = useLoginModal();
+  const {handleOpenOptionModal} = useAddOptionModal();
   const user = useSelector((state: any) => state.user.user);
-
+  const {handleOpenAddModal} = useAddModal();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      dispatch(setUser(user))
-    })
+      if (user) {
+        reload(user)
+          .then(() => {
+            dispatch(setUser(serializeUser(user)));
+          })
+          .catch((error) => {
+            console.error("Failed to reload user:", error);
+          });
+      } else {
+        dispatch(setUser(null));
+      }
+    });
 
     return () => {
       unsubscribe();
-    }
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth, dispatch]);
 
   const logout = async () => {
     try {
       await signOut(auth);
-      toast.success('Account Logged out!');
+      toast.success("Account Logged out!");
     } catch (error) {
-      console.log('error: ', error)
+      console.log("error: ", error);
     }
-  }
-
-  const signupModal = useSignupModal();
-  const loginModal = useLoginModal();
+  };
 
   return (
     <>
@@ -61,37 +71,47 @@ const UserMenu = () => {
           </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="min-w-[175px] font-semibold  shadow-md z-[1006]">
-
-          {/*   <DropdownMenuLabel className="py-2">Welcome,</DropdownMenuLabel>
-            <DropdownMenuSeparator /> */}
-            {user ? (
-              <>
-              <DropdownMenuLabel className="py-2">Welcome, {user.displayName}! </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-               <DropdownMenuItem
-              className="py-2 cursor-pointer"
-              onClick={logout}
-            >
-              Logout
-            </DropdownMenuItem>
-              </>
-            ) : (
-              <>
-                 <DropdownMenuItem
-              className="py-2 cursor-pointer"
-              onClick={()=>loginModal.setOpen(true)}
-            >
-              Login
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="py-2 cursor-pointer"
-              onClick={() => signupModal.setOpen(true)}
-            >
-              Signup
-            </DropdownMenuItem>
-              </>
-            )}
-    
+          {user ? (
+            <>
+              <DropdownMenuLabel className="py-2">
+                Welcome, {user.displayName}!{" "}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="py-2 cursor-pointer"
+                onClick={handleOpenAddModal}
+              >
+                Add Menu Item
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="py-2 cursor-pointer"
+                onClick={handleOpenOptionModal}
+              >
+                Add Menu Option
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="py-2 cursor-pointer"
+                onClick={logout}
+              >
+                Logout
+              </DropdownMenuItem>
+            </>
+          ) : (
+            <>
+              <DropdownMenuItem
+                className="py-2 cursor-pointer"
+                onClick={() => setOpenLoginModal(true)}
+              >
+                Login
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="py-2 cursor-pointer"
+                onClick={() => setOpenSignupModal(true)}
+              >
+                Signup
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </>

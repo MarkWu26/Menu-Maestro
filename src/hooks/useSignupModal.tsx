@@ -1,16 +1,21 @@
-import {create} from 'zustand';
+import { useDispatch, useSelector } from "react-redux";
+import { setOpenSignupModal } from "@/features/slice/modalSlice";
 
-interface signupProps{
-    isOpen: boolean;
-    setOpen: (isOpen: boolean) => void;
-    setClose: () => void;
-} 
+export const useSignupModal = () => {
+  const dispatch = useDispatch();
+  const isOpen = useSelector((state: any) => state.modal.isSignupModalOpen);
 
-const useSignupModal = create<signupProps> ((set)=>({
-    isOpen: false,
-    setOpen: (isOpen: boolean) => set({isOpen}),
-    setClose: () => set({isOpen: false}),
-   
-}))
+  const setOpen = (value: boolean) => {
+    dispatch(setOpenSignupModal(value));
+  };
 
-export default useSignupModal
+  const setClose = () => {
+    dispatch(setOpenSignupModal(false));
+  };
+
+  return {
+    setOpen,
+    setClose,
+    isOpen,
+  };
+};

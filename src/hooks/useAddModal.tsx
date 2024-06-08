@@ -1,15 +1,21 @@
-import {create} from 'zustand';
+import { useDispatch, useSelector } from "react-redux";
+import { setOpenAddModal } from "@/features/slice/modalSlice";
 
-interface MenuProps{
-    isOpen: boolean;
-    setOpen: (isOpen: boolean) => void;
-    setClose: () => void;
-} 
+export const useAddModal = () => {
+  const dispatch = useDispatch();
+  const modalState = useSelector((state: any) => state.modal.isAddModalOpen);
 
-const useAddModal = create<MenuProps> ((set)=>({
-    isOpen: false,
-    setOpen: (isOpen) => set({isOpen}),
-    setClose: () => set({isOpen: false}),
-}))
+  const handleOpenAddModal = () => {
+    dispatch(setOpenAddModal(true));
+  };
 
-export default useAddModal
+  const handleCloseAddModal = () => {
+    dispatch(setOpenAddModal(false));
+  };
+
+  return {
+    handleOpenAddModal,
+    handleCloseAddModal,
+    modalState,
+  };
+};

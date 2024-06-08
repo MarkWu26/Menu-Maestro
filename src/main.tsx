@@ -10,17 +10,18 @@ import LoginModal from './components/modals/auth/LoginModal.tsx'
 import {Provider} from 'react-redux'
 import store from './features/store.ts'
 import ViewModal from './components/modals/menuItems/ViewModal.tsx'
+import AddOptionModal from './components/modals/optionItems/AddOptionModal.tsx'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Provider store={store}>
     <App />
+    <AddOptionModal/>
     <EditModal/>
     <ViewModal/>
     <DeleteModal/>
     <SignupModal/>
     <LoginModal/>
-    
     <Toaster position='top-center' duration={2000}/>
     </Provider>
   </React.StrictMode>,

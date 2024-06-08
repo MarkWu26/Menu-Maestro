@@ -4,34 +4,34 @@ import ItemCard from "./components/ItemCard";
 import Navbar from "./components/Navbar";
 import { Button } from "./components/ui/button";
 import { Plus } from "lucide-react";
-import useMenuModal from "./hooks/useAddModal";
+import { useAddModal } from "./hooks/useAddModal";
 import MenuModal from "./components/modals/menuItems/AddModal";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { database } from "@/config/firebase";
 import { ref, onValue } from "firebase/database";
 import EmptyHeading from "./components/EmptyHeading";
 import SkeletonCard from "./components/SkeletonCard";
 import { useDispatch, useSelector } from "react-redux";
-import useLoginModal from "./hooks/useLoginModal";
+import { useLoginModal } from "./hooks/useLoginModal";
 import { setOptions } from "./features/slice/optionSlice";
-import { setMenuItems } from "./features/slice/menuItemsSlice";
+import { useMenuItems } from "./hooks/useMenuItems";
 import { item } from "./types";
 
 function App() {
-  const menuModal = useMenuModal();
-  const loginModal = useLoginModal();
+  const { setOpen: handleOpenLoginModal } = useLoginModal();
+  const { handleOpenAddModal } = useAddModal();
+  const { setItems, menuItems } = useMenuItems();
+  const [allItems, setAllItems] = useState<item [] | null>()
+  const [filter, setFilter] = useState("All");
 
   const user = useSelector((state: any) => state.user.user);
-  const menuItems: item[] = useSelector((state: any) => state.menuItems.menuItems)
 
   const dispatch = useDispatch();
 
-  /* const [menuItems, setMenuItems] = useState<item[] | null>(null); */
+  const menuItemsRef = ref(database, "/menuItems");
+  const optionsRef = ref(database, "/menuOptions");
 
   useEffect(() => {
-    const menuItemsRef = ref(database, "/menuItems");
-    const optionsRef = ref(database, "/menuOptions");
-
     const unsubscribeMenuItems = onValue(menuItemsRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
@@ -39,10 +39,10 @@ function App() {
           id: key,
           ...data[key],
         }));
-        dispatch(setMenuItems(itemsArray))
-        
+        setItems(itemsArray);
+        setAllItems(itemsArray)
       } else {
-        dispatch(setMenuItems([]))
+        setItems([]);
       }
     });
 
@@ -63,15 +63,36 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const openAddModal = () => {
+  const openAdd = () => {
     if (!user) {
-      loginModal.setOpen(true);
+      handleOpenLoginModal(true);
     } else {
-      menuModal.setOpen(true);
+      handleOpenAddModal();
     }
   };
 
+  const handleSetFilter = (category: string) => {
+    setFilter(category);
+    if(category === 'All'){
+      setItems(allItems || [])
+    } else {
+      const filteredItems = allItems?.filter((item) => item.category === category);
+      setItems(filteredItems || [])
+    }
+   
+  }
+
   const loop = ["", "", "", ""];
+
+  const categories = [
+    "All",
+    "Appetizers",
+    "Soups & Salads",
+    "Main Courses",
+    "Sides",
+    "Desserts",
+    "Beverages",
+  ];
 
   if (!menuItems) {
     return (
@@ -106,14 +127,29 @@ function App() {
             {menuItems.length > 0 && (
               <div>
                 <Button
-                  className="px-6 flex flex-row gap-x-2 items-center"
+                  className="px-6 text-base font-semibold flex flex-row gap-x-2 items-center"
                   size={"lg"}
-                  onClick={openAddModal}
+                  onClick={openAdd}
                 >
                   <Plus size={18} /> Add Menu
                 </Button>
               </div>
             )}
+          </div>
+          <div className="flex flex-row gap-x-6 pt-5  ">
+            {categories.map((item, index) => (
+              <div
+                className={`flex rounded-xl p-4 px-8 bg-white shadow-lg hover:cursor-pointer font-medium ${
+                  filter === item
+                    ? "bg-green-100 border-[1px] border-green-400"
+                    : "hover:bg-green-50"
+                } transition-all ease-in-out duration-200`}
+                key={index}
+                onClick={() => handleSetFilter(item)}
+              > 
+                {item}
+              </div>
+            ))}
           </div>
           {menuItems.length === 0 ? (
             <EmptyHeading

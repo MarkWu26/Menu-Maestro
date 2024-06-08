@@ -1,16 +1,21 @@
-import {create} from 'zustand';
+import { useDispatch, useSelector } from "react-redux";
+import { setOpenLoginModal } from "@/features/slice/modalSlice";
 
-interface loginProps{
-    isOpen: boolean;
-    setOpen: (isOpen: boolean) => void;
-    setClose: () => void;
-} 
+export const useLoginModal = () => {
+  const dispatch = useDispatch();
+  const isOpen = useSelector((state: any) => state.modal.isLoginModalOpen);
 
-const useLoginModal = create<loginProps> ((set)=>({
-    isOpen: false,
-    setOpen: (isOpen: boolean) => set({isOpen}),
-    setClose: () => set({isOpen: false}),
-   
-}))
+  const setOpen = (value: boolean) => {
+    dispatch(setOpenLoginModal(value));
+  };
 
-export default useLoginModal
+  const setClose = () => {
+    dispatch(setOpenLoginModal(false));
+  };
+
+  return {
+    setOpen,
+    setClose,
+    isOpen,
+  };
+};

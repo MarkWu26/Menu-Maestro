@@ -16,23 +16,19 @@ import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { Input } from "../../ui/input";
 import { toast } from "sonner";
-import useLoginModal from "@/hooks/useLoginModal";
-import useSignupModal from "@/hooks/useSignupModal";
+import {useLoginModal} from "@/hooks/useLoginModal";
+import {useSignupModal} from "@/hooks/useSignupModal";
 
 const LoginModal = () => {
 
-  const loginModal = useLoginModal();
-  const signupModal = useSignupModal();
+  const {setOpen, isOpen, setClose} = useLoginModal();
+  const {setOpen: setSignupModalOpen} = useSignupModal();
 
   const {
     register,
     handleSubmit,
     reset,
-  } = useForm<FieldValues>({
-    defaultValues: {
-      type: "",
-    },
-  });
+  } = useForm<FieldValues>({});
 
   const googleSignIn = async () => {
   
@@ -41,7 +37,8 @@ const LoginModal = () => {
         await signInWithPopup(auth, provider);
         toast.success('Logged in!')
        
-        loginModal.setClose();
+        setClose();
+        reset();
       } catch (error) {
         console.error(error);
        
@@ -52,7 +49,7 @@ const LoginModal = () => {
     try {
       await signInWithEmailAndPassword(auth, data.email, data.password);
       toast.success('Logged in!')
-      loginModal.setClose();
+      setClose();
       reset();
     } catch (error) {
       console.log('error: ', error)
@@ -61,12 +58,12 @@ const LoginModal = () => {
   }
 
   const openSignupModal = () => {
-    loginModal.setClose();
-    signupModal.setOpen(true)
+    setClose();
+    setSignupModalOpen(true)
   };
 
   return (
-    <Dialog open={loginModal.isOpen} onOpenChange={loginModal.setOpen}>
+    <Dialog open={isOpen} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader className="pt-6 pb-2">
           <DialogTitle className="text-2xl flex font-semibold justify-center items-center">

@@ -1,7 +1,7 @@
 import React from "react";
 import Heading from "./Heading";
 import { Button } from "./ui/button";
-import useMenuModal from "@/hooks/useAddModal";
+import {useAddModal} from "@/hooks/useAddModal";
 
 interface emptyHeadingProps {
   title: string;
@@ -14,7 +14,7 @@ const EmptyHeading: React.FC<emptyHeadingProps> = ({
   subtitle,
   isEmptyItems,
 }) => {
-  const menuModal = useMenuModal();
+  const {handleOpenAddModal} = useAddModal();
 
   return (
     <div className="flex flex-col gap-2 justify-center items-center h-[50vh]">
@@ -24,7 +24,7 @@ const EmptyHeading: React.FC<emptyHeadingProps> = ({
           <Button
             className="text-lg py-6"
             size="lg"
-            onClick={() => menuModal.setOpen(true)}
+            onClick={handleOpenAddModal}
           >
             Add Menu Item
           </Button>

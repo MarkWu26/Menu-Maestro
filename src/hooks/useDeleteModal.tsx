@@ -1,4 +1,4 @@
-import {create} from 'zustand';
+/* import {create} from 'zustand';
 
 interface deleteProps{
     isOpen: boolean;
@@ -14,4 +14,29 @@ const useDeleteModal = create<deleteProps> ((set)=>({
     id: ''
 }))
 
-export default useDeleteModal
+export default useDeleteModal */
+
+import { useDispatch, useSelector } from "react-redux";
+import { setOpenDeleteModal } from "@/features/slice/modalSlice";
+import { item } from "@/types";
+
+export const useDeleteModal = () => {
+  const dispatch = useDispatch();
+  const modalState = useSelector((state: any) => state.modal.isDeleteModalOpen);
+  const selectedItem: item = useSelector((state: any) => state.modal.selectedItem)
+
+  const handleOpenDeleteModal = (item?: item) => {
+    dispatch(setOpenDeleteModal({isOpen: true, item}));
+  };
+
+  const handleCloseDeleteModal = () => {
+    dispatch(setOpenDeleteModal({isOpen: false}));
+  };
+
+  return {
+    handleOpenDeleteModal,
+    handleCloseDeleteModal,
+    selectedItem,
+    modalState,
+  };
+};

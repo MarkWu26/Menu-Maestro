@@ -1,5 +1,5 @@
 
-@import url('./assets/fonts/fonts.css');
+/* @import url('./assets/fonts/fonts.css'); */
 
 @tailwind base;
   @tailwind components;
@@ -74,8 +74,12 @@
     }
   }
 
-  body {
+  /* body {
     font-family: 'Satoshi', sans-serif;
+  } */
+
+  body {
+    @apply font-custom;
   }
 
   @layer base {

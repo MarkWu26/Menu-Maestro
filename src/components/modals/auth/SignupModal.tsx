@@ -9,20 +9,22 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "@/config/firebase";
-
+import {reload} from 'firebase/auth';
+import { useDispatch } from "react-redux";
+import { serializeUser } from "@/lib/serializeUser";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
-
-import useSignupModal from "@/hooks/useSignupModal";
+import { setUser } from "@/features/slice/userSlice";
+import {useSignupModal} from "@/hooks/useSignupModal";
 import { Input } from "../../ui/input";
 import { toast } from "sonner";
-import useLoginModal from "@/hooks/useLoginModal";
+import {useLoginModal} from "@/hooks/useLoginModal";
 
 const SignupModal = () => {
 
-  const signupModal = useSignupModal();
-  const loginModal = useLoginModal()
+  const {setOpen, setClose, isOpen} = useSignupModal();
+  const {setOpen: setLoginModalOpen} = useLoginModal()
 
   const {
     register,
@@ -34,11 +36,23 @@ const SignupModal = () => {
     },
   });
 
+  const dispatch = useDispatch();
+ 
   const onSubmit: SubmitHandler<FieldValues> = async (data) => {
     try {
-      await createUserWithEmailAndPassword(auth, data.email, data.password);
+      const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+      const user = userCredential.user
+
+       await updateProfile(user, {
+        displayName: data.name
+      })
+
+      dispatch(setUser(serializeUser(user)))
+
+      await reload(user);
+
       toast.success('Account created!')
-      signupModal.setClose();
+      setClose();
       reset();
     } catch (error) {
       console.log('error: ', error)
@@ -47,12 +61,12 @@ const SignupModal = () => {
   }
 
   const openLoginModal = () => {
-    signupModal.setClose()
-    loginModal.setOpen(true);
+    setClose()
+    setLoginModalOpen(true);
   };
 
   return (
-    <Dialog open={signupModal.isOpen} onOpenChange={signupModal.setOpen}>
+    <Dialog open={isOpen} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader className="pt-6 pb-2">
           <DialogTitle className="text-2xl flex font-semibold justify-center items-center">
@@ -61,14 +75,21 @@ const SignupModal = () => {
           <DialogDescription className="flex items-center justify-center text-md">
             Enter your details below to start continuing.
           </DialogDescription>
-        </DialogHeader>
-        {/* <UserAuthForm type={userType} isPawnshop={isPawnshop}/> */}
-        <div className="gap-8 flex flex-col">
+        </DialogHeader>  
+        <div className="gap-6 flex flex-col text-sm">
+        <div className="flex flex-col gap-4">
+            <span>Name</span>
+            <Input
+              className="py-6"
+              placeholder="Name..."
+              {...register("name", { required: true })}
+            />
+          </div>
           <div className="flex flex-col gap-4">
             <span> Email</span>
             <Input
               className="py-6"
-              placeholder="Name..."
+              placeholder="Email..."
               {...register("email", { required: true })}
             />
           </div>

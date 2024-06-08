@@ -1,4 +1,4 @@
-import useDeleteModal from "@/hooks/useDeleteModal";
+import {useDeleteModal} from "@/hooks/useDeleteModal";
 import Modal from "../../Modal";
 import { useState } from "react";
 import { database } from "@/config/firebase";
@@ -7,18 +7,16 @@ import { ref, remove } from "firebase/database";
 import { toast } from "sonner";
 
 const DeleteModal = () => {
-  const deleteModal = useDeleteModal();
-
-  const { id } = deleteModal;
+  const { handleCloseDeleteModal, selectedItem, modalState,} = useDeleteModal();
 
   const [isLoading, setIsLoading] = useState(false);
 
   const onSubmit = async () => {
     try {
       setIsLoading(true);
-      await remove(ref(database, "/menuItems/" + id));
+      await remove(ref(database, "/menuItems/" + selectedItem.id));
       setIsLoading(false);
-      deleteModal.setClose();
+      handleCloseDeleteModal()
       toast.success("Item deleted!");
     } catch (error) {
       console.error("Error: ", error);
@@ -40,8 +38,8 @@ const DeleteModal = () => {
 
   return (
     <Modal
-      isOpen={deleteModal.isOpen}
-      onClose={deleteModal.setClose}
+      isOpen={modalState}
+      onClose={handleCloseDeleteModal}
       onSubmit={onSubmit}
       body={body}
       disabled={isLoading}
@@ -49,7 +47,7 @@ const DeleteModal = () => {
       title="Delete Item"
       actionLabel="Confirm"
       secondaryActionLabel="Close"
-      secondaryAction={deleteModal.setClose}
+      secondaryAction={handleCloseDeleteModal}
     />
   );
 };

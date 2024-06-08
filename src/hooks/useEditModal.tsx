@@ -1,17 +1,24 @@
-import { item } from '@/types';
-import {create} from 'zustand';
+import { useDispatch, useSelector } from "react-redux";
+import { setOpenEditModal } from "@/features/slice/modalSlice";
+import { item } from "@/types";
 
-interface editProps{
-    isOpen: boolean;
-    setOpen: (isOpen: boolean, item?: item) => void;
-    item?: item;
-    setClose: () => void;
-} 
+export const useEditModal = () => {
+  const dispatch = useDispatch();
+  const modalState = useSelector((state: any) => state.modal.isEditModalOpen);
+  const selectedItem: item = useSelector((state: any) => state.modal.selectedItem)
 
-const useEditModal = create<editProps> ((set)=>({
-    isOpen: false,
-    setOpen: (isOpen, item) => set({isOpen, item}),
-    setClose: () => set({isOpen: false}),
-}))
+  const handleOpenEditModal = (item?: item) => {
+    dispatch(setOpenEditModal({isOpen: true, item}));
+  };
 
-export default useEditModal
+  const handleCloseEditModal = () => {
+    dispatch(setOpenEditModal({isOpen: false}));
+  };
+
+  return {
+    handleOpenEditModal,
+    handleCloseEditModal,
+    selectedItem,
+    modalState,
+  };
+};

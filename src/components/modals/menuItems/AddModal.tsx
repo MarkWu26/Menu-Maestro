@@ -1,4 +1,4 @@
-import useMenuModal from "@/hooks/useAddModal";
+import {useAddModal} from "@/hooks/useAddModal";
 import Modal from "../../Modal";
 import { useEffect, useMemo, useState } from "react";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
@@ -12,8 +12,8 @@ import { PlusIcon, Trash2 } from "lucide-react";
 import { ref, set, push } from "firebase/database";
 import { database } from "@/config/firebase";
 import { toast } from "sonner";
-import { useSelector } from "react-redux";
 import { ItemOption } from "@/types";
+import { useOptions } from "@/hooks/useOptions";
 
 enum STEPS {
   CATEGORY = 0,
@@ -33,18 +33,15 @@ const categories = [
 ];
 
 const AddModal = () => {
-  const menuModal = useMenuModal();
+  const {handleCloseAddModal, modalState} = useAddModal();
+
   const [step, setStep] = useState(STEPS.CATEGORY);
   const [isOptions, setIsOptions] = useState<boolean | null>(null);
-  const [options, setOptions] = useState<ItemOption[] | []
-  >([]);
+  const [options, setOptions] = useState<ItemOption[] | []>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
 
-  const optionItems = useSelector((state: any) => {
-    console.log('state: ', state)
-    return state.options.options
-  })
+  const {optionItems} = useOptions();
 
   const { register, handleSubmit, watch, setValue, reset } =
     useForm<FieldValues>({
@@ -67,9 +64,6 @@ const AddModal = () => {
   const quantity = watch("quantity");
   const optionName: string = watch("optionName");
   const optionPrice: number = watch("optionPrice");
-  const totalCost = watch('cost')
-
-  console.log("totalCOst", totalCost);
 
   useEffect(() => {
     if (step === STEPS.CATEGORY && !category) {
@@ -99,15 +93,10 @@ const AddModal = () => {
     }
 
     if (step === STEPS.QUANTITY) {
-      if (
-        isOptions &&
-        options.some(
-          (option) => Number(option.quantity) === 0 || !option.quantity
-        )
-      ) {
-        setIsDisabled(true);
-      } else {
-        setIsDisabled(false);
+      if (isOptions && (options.some((option) => Number(option.quantity) === 0 || !option.quantity))) {
+        return setIsDisabled(true);
+      } else if (isOptions && (!options.some((option) => Number(option.quantity) === 0 || !option.quantity))) {
+        return setIsDisabled(false);
       }
 
       if (!isOptions && Number(quantity) === 0) {
@@ -150,7 +139,7 @@ const AddModal = () => {
             optionQuantity: null,
             options,
           });
-          menuModal.setClose();
+          handleCloseAddModal()
           setOptions([]);
         } else {
           await set(push(ref(database, "menuItems")), {
@@ -159,7 +148,7 @@ const AddModal = () => {
             optionName: null,
             optionQuantity: null,
           });
-          menuModal.setClose();
+          handleCloseAddModal()
         }
         toast.success("Item added successfully!");
         setStep(STEPS.CATEGORY);
@@ -204,9 +193,7 @@ const AddModal = () => {
   };
 
   const updateOptionPrice = (index: number, price: number) => {
-    const updatedOptions = options.map((option, i) =>
-      i === index ? { ...option, price } : option
-    );
+    const updatedOptions = options.map((option, i) => i === index ? { ...option, price } : option);
     setOptions(updatedOptions);
   };
 
@@ -214,13 +201,9 @@ const AddModal = () => {
     const updatedOptions = options.map((option, i) =>{
       const cost = quantity * Number(option.price)
      return  i === index ? { ...option, quantity, cost } : option
-    }
-     
-    );
+    });
     setOptions(updatedOptions);
   };
-
-
 
   const handleSelectOption = (value: string) => {
     if (value === "No") {
@@ -238,7 +221,6 @@ const AddModal = () => {
         title="Please choose a category"
         subtitle=" Select a category from the dropdown below to proceed."
       />
-
       <Select
         defaultPlaceholder="Select Category..."
         {...register("category", { required: true })}
@@ -263,7 +245,6 @@ const AddModal = () => {
           required
           {...register("name", { required: true })}
         />
-        {/* Text Input */}
       </div>
     );
   }
@@ -292,13 +273,6 @@ const AddModal = () => {
             Please select an option and price
             <div className="flex flex-row gap-x-4 items-center justify-between">
               <div className="flex flex-row items-center w-[50%]">
-                {/*  <Input 
-                className="py-6 w-full" 
-                placeholder="Option Name" 
-                id="optionName" 
-                required  
-                {...register("optionName",  {required: false} )}
-              /> */}
                 <Select
                   defaultPlaceholder="Select Option..."
                   items={optionItems || []}
@@ -324,7 +298,7 @@ const AddModal = () => {
               </Button>
             </div>
             {options.length > 0 && (
-              <h5 className="font-semibold">Item Options</h5>
+              <h5 className="font-semibold pt-4">Item Options</h5>
             )}
             <div className="flex flex-col gap-4 max-h-60 overflow-y-auto">
               {options.map((option, index) => (
@@ -389,7 +363,7 @@ const AddModal = () => {
                 <div>
                   Price: ₱{option.price}
                 </div>
-                <div className="flex items-center flex-row gap-x-2">
+                <div className="flex items-center flex-row gap-x-2 w-[30%]">
                   Quantity
                   <Input
                     type="number"
@@ -398,7 +372,7 @@ const AddModal = () => {
                     onChange={(e) =>
                       updateOptionQuantity(index, Number(e.target.value))
                     }
-                    className="py-2"
+                    className="py-2 "
                   />
                 </div>
                 <div className="flex items-center flex-row gap-x-2">
@@ -442,8 +416,8 @@ const AddModal = () => {
 
   return (
     <Modal
-      isOpen={menuModal.isOpen}
-      onClose={menuModal.setClose}
+      isOpen={modalState}
+      onClose={handleCloseAddModal}
       onSubmit={handleSubmit(onSubmit)}
       body={body}
       disabled={isLoading || isDisabled}

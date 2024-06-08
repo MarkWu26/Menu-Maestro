@@ -19,7 +19,7 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        custom: ['Satoshi', 'sans-serif'],
+        custom: ['Nunito', 'sans-serif'],
       },
       fontWeight: {
         light: 300,
