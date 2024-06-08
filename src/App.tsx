@@ -21,7 +21,7 @@ function App() {
   const { setOpen: handleOpenLoginModal } = useLoginModal();
   const { handleOpenAddModal } = useAddModal();
   const { setItems, menuItems } = useMenuItems();
-  const [allItems, setAllItems] = useState<item [] | null>()
+  const [allItems, setAllItems] = useState<item[] | null>();
   const [filter, setFilter] = useState("All");
 
   const user = useSelector((state: any) => state.user.user);
@@ -40,7 +40,7 @@ function App() {
           ...data[key],
         }));
         setItems(itemsArray);
-        setAllItems(itemsArray)
+        setAllItems(itemsArray);
       } else {
         setItems([]);
       }
@@ -73,14 +73,15 @@ function App() {
 
   const handleSetFilter = (category: string) => {
     setFilter(category);
-    if(category === 'All'){
-      setItems(allItems || [])
+    if (category === "All") {
+      setItems(allItems || []);
     } else {
-      const filteredItems = allItems?.filter((item) => item.category === category);
-      setItems(filteredItems || [])
+      const filteredItems = allItems?.filter(
+        (item) => item.category === category
+      );
+      setItems(filteredItems || []);
     }
-   
-  }
+  };
 
   const loop = ["", "", "", ""];
 
@@ -136,20 +137,23 @@ function App() {
               </div>
             )}
           </div>
-          <div className="flex flex-row gap-x-6 pt-5  ">
-            {categories.map((item, index) => (
-              <div
-                className={`flex rounded-xl p-4 px-8 bg-white shadow-lg hover:cursor-pointer font-medium ${
-                  filter === item
-                    ? "bg-green-100 border-[1px] border-green-400"
-                    : "hover:bg-green-50"
-                } transition-all ease-in-out duration-200`}
-                key={index}
-                onClick={() => handleSetFilter(item)}
-              > 
-                {item}
-              </div>
-            ))}
+          <div className="flex flex-row py-5 overflow-x-auto">
+            <div className="flex gap-x-6 ">
+              {categories.map((item, index) => (
+                <div
+                  className={`flex flex-row rounded-xl items-center justify-center px-10 py-[0px] sm:p-4 sm:px-8 bg-white shadow-lg hover:cursor-pointer font-medium text-center ${
+                    filter === item
+                      ? "bg-green-100 border-[1px] border-green-400"
+                      : "hover:bg-green-50"
+                  } transition ease-in-out duration-200`}
+                  key={index}
+                  onClick={() => handleSetFilter(item)}
+                >
+                <span className="flex flex-row"> {item}</span>
+                 
+                </div>
+              ))}
+            </div>
           </div>
           {menuItems.length === 0 ? (
             <EmptyHeading
@@ -158,7 +162,7 @@ function App() {
               isEmptyItems
             />
           ) : (
-            <div className="pt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 pb-12">
+            <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 pb-12">
               {menuItems.map((item, key) => (
                 <ItemCard key={key} item={item} />
               ))}
