@@ -39,6 +39,7 @@ const EditModal = () => {
         image: "",
         optionName: "",
         optionQuantity: 0,
+        optionPrice: 0,
       },
     });
 
@@ -47,6 +48,8 @@ const EditModal = () => {
   const optionName: string = watch("optionName");
   const optionPrice: number = watch("optionPrice");
   const quantity = watch("quantity");
+
+    console.log('optiosns: ', options)
 
   const setCustomValue = (id: string, value: any) => {
     setValue(id, value, {

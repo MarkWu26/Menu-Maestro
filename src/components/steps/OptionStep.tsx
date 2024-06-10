@@ -42,6 +42,7 @@ const OptionStep: React.FC<OptionStepProps> = ({
           title="Add Options and Prices"
           subtitle="Specify any options available for this item (e.g., sizes, add-ons)."
         />
+
         <div className="flex flex-col gap-y-2">
           Do you want to include options for the item?
           {isEdit ? (
@@ -64,16 +65,8 @@ const OptionStep: React.FC<OptionStepProps> = ({
             onChange={(value: string) => handleSelectOption(value)}
           />
           )}
-       {/*    <Select
-            defaultPlaceholder="Select Options..."
-            {...register("isOptions", { required: isEdit ? false : true })}
-            items={["No", "Yes"]}
-            selectedValue={
-              isOptions === null ? "" : isOptions === false ? "No" : "Yes"
-            }
-            onChange={(value: string) => handleSelectOption(value)}
-          /> */}
         </div>
+
         {isOptions ? (
           <div className="flex flex-col gap-y-2">
             Please select an option and price
@@ -89,16 +82,7 @@ const OptionStep: React.FC<OptionStepProps> = ({
                 />
               </div>
               <div className="flex flex-row gap-x-2 items-center w-[50%]">
-                Price:
-                {isEdit ? (
-                    <Input
-                    type="number"
-                    className="py-6"
-                    placeholder="Price..."
-                    id="optionPrice"
-                    required
-                    />
-                ) : (
+                Price:  
                     <Input
                     type="number"
                     className="py-6"
@@ -106,9 +90,7 @@ const OptionStep: React.FC<OptionStepProps> = ({
                     id="optionPrice"
                     required
                     {...register("optionPrice", { required: isEdit ? false : true })}
-                  />
-                )}
-              
+                    />           
               </div>
               <Button onClick={addOption}>
                 <PlusIcon size={18} />
