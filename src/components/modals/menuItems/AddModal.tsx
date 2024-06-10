@@ -39,6 +39,7 @@ const AddModal = () => {
         price: 0,
         image: "",
         optionName: "",
+        isOptions: null,
         optionPrice: 0,
       },
     });
