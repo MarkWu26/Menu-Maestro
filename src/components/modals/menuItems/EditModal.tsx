@@ -130,6 +130,7 @@ const EditModal = () => {
             ...values,
             cost: values.price * values.quantity,
             optionName: null,
+            optionPrice: null,
             optionQuantity: null,
           });
           handleCloseEditModal();

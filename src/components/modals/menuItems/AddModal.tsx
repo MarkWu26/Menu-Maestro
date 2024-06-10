@@ -101,6 +101,7 @@ const AddModal = () => {
           await set(push(ref(database, "menuItems")), {
             ...values,
             cost: values.price * values.quantity,
+            optionPrice: null,
             optionName: null,
             optionQuantity: null,
           });
