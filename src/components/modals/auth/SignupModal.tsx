@@ -12,19 +12,19 @@ import { Button } from "@/components/ui/button";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "@/config/firebase";
 import {reload} from 'firebase/auth';
-import { useDispatch } from "react-redux";
 import { serializeUser } from "@/lib/serializeUser";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
-import { setUser } from "@/features/slice/userSlice";
 import {useSignupModal} from "@/hooks/useSignupModal";
 import { Input } from "../../ui/input";
 import { toast } from "sonner";
 import {useLoginModal} from "@/hooks/useLoginModal";
+import { useUser } from "@/hooks/useUser";
 
 const SignupModal = () => {
 
   const {setOpen, setClose, isOpen} = useSignupModal();
-  const {setOpen: setLoginModalOpen} = useLoginModal()
+  const {setOpen: setLoginModalOpen} = useLoginModal();
+  const {setCurrentUser} = useUser();
 
   const {
     register,
@@ -35,22 +35,16 @@ const SignupModal = () => {
       type: "",
     },
   });
-
-  const dispatch = useDispatch();
  
   const onSubmit: SubmitHandler<FieldValues> = async (data) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
       const user = userCredential.user
-
-       await updateProfile(user, {
+      await updateProfile(user, {
         displayName: data.name
       })
-
-      dispatch(setUser(serializeUser(user)))
-
+      setCurrentUser(serializeUser(user));
       await reload(user);
-
       toast.success('Account created!')
       setClose();
       reset();

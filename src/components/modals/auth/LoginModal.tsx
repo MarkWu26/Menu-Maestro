@@ -76,7 +76,7 @@ const LoginModal = () => {
             <span> Email</span>
             <Input
               className="py-6"
-              placeholder="Name..."
+              placeholder="Email..."
               {...register("email", { required: true })}
             />
           </div>
