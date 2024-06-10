@@ -1,12 +1,16 @@
+import {memo} from 'react'
+
 interface CategoryFilterProps {
   handleSetFilter: (item: string) => void;
   filter: string;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 const CategoryFilter: React.FC<CategoryFilterProps> = ({
   handleSetFilter,
   filter,
 }) => {
+
   const categories = [
     "All",
     "Appetizers",
@@ -36,4 +40,5 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
   );
 };
 
-export default CategoryFilter;
+// eslint-disable-next-line react-refresh/only-export-components
+export default memo(CategoryFilter);

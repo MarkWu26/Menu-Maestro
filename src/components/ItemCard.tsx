@@ -5,9 +5,9 @@ import {useDeleteModal} from "@/hooks/useDeleteModal";
 import { item } from "@/types";
 import { Button } from "./ui/button";
 import {useEditModal} from "@/hooks/useEditModal";
-import { useSelector } from "react-redux";
 import {useViewModal} from "@/hooks/useViewModal";
 import {useLoginModal} from "@/hooks/useLoginModal";
+import { useUser } from "@/hooks/useUser";
 
 interface ItemCardProps {
   item?: item;
@@ -18,7 +18,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
   const {handleOpenEditModal} = useEditModal();
   const {setOpen: handleOpenLoginModal} = useLoginModal()
   const {handleOpenViewModal} = useViewModal()
-  const user = useSelector((state: any) => state.user.user);
+  const {user} = useUser();
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation()

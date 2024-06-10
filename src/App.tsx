@@ -3,7 +3,7 @@ import Container from "./components/Container";
 import ItemCard from "./components/ItemCard";
 import Navbar from "./components/Navbar";
 import { useAddModal } from "./hooks/useAddModal";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { database } from "@/config/firebase";
 import { ref, onValue } from "firebase/database";
 import EmptyHeading from "./components/EmptyHeading";
@@ -32,6 +32,7 @@ function App() {
   useEffect(() => {
     const unsubscribeMenuItems = onValue(menuItemsRef, (snapshot) => {
       const data = snapshot.val();
+      console.log('data: ', data)
       if (data) {
         const itemsArray = Object.keys(data).map((key) => ({
           id: key,
@@ -61,15 +62,16 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const openAdd = () => {
+  const openAdd = useCallback(() => {
     if (!user) {
       handleOpenLoginModal(true);
     } else {
       handleOpenAddModal();
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
-  const handleSetFilter = (category: string) => {
+  const handleSetFilter = useCallback((category: string) => {
     setFilter(category);
     if (category === "All") {
       setItems(allItems || []);
@@ -79,7 +81,8 @@ function App() {
       );
       setItems(filteredItems || []);
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allItems]);
 
   if (!menuItems) {
     return <Loading />;

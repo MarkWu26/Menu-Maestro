@@ -1,12 +1,16 @@
 import { useMenuItems } from "@/hooks/useMenuItems";
 import { Button } from "./ui/button";
 import { Plus } from "lucide-react";
+import {memo} from 'react'
 
 interface HeaderProps {
   openAddModal: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ openAddModal }) => {
+
+  console.log('HEADER')
+
   const { menuItems } = useMenuItems();
 
   return (
@@ -27,4 +31,4 @@ const Header: React.FC<HeaderProps> = ({ openAddModal }) => {
   );
 };
 
-export default Header;
+export default memo(Header);
