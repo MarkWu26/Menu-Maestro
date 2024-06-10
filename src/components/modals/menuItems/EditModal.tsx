@@ -112,6 +112,11 @@ const EditModal = () => {
         if (isOptions) {
           await update(ref(database, `/menuItems/${selectedItem?.id}`), {
             ...values,
+            quantity: null,
+            price: null,
+            optionName: null,
+            optionPrice: null,
+            optionQuantity: null,
             options,
           });
           handleCloseEditModal();
@@ -123,6 +128,7 @@ const EditModal = () => {
           setIsLoading(true);
           await update(ref(database, `/menuItems/${selectedItem?.id}`), {
             ...values,
+            cost: values.price * values.quantity,
             optionName: null,
             optionQuantity: null,
           });
